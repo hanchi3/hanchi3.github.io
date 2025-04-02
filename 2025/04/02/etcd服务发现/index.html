@@ -1,0 +1,232 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>etcd服务发现 | HanChi's Blog</title><meta name="author" content="Han Chi"><meta name="copyright" content="Han Chi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="传统硬编码方式手动指定 host:port 进行 grpc.Dial() 连接。缺点  强依赖固定地址端口，缺乏灵活性。如果服务动态扩展（比如负载均衡下多实例运行），无法自动发现新实例。 **连接管理问题。**代码里每次 grpc.Dial() 都会新建连接：没有连接池，可能导致过多 TCP 连接，影响性能。缺乏健康检查，如果目标服务不可用，客户端不会自动重试。  服务注册与发现的基本概念服务注册">
+<meta property="og:type" content="article">
+<meta property="og:title" content="etcd服务发现">
+<meta property="og:url" content="http://hanchi3.github.io/2025/04/02/etcd%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0/index.html">
+<meta property="og:site_name" content="HanChi&#39;s Blog">
+<meta property="og:description" content="传统硬编码方式手动指定 host:port 进行 grpc.Dial() 连接。缺点  强依赖固定地址端口，缺乏灵活性。如果服务动态扩展（比如负载均衡下多实例运行），无法自动发现新实例。 **连接管理问题。**代码里每次 grpc.Dial() 都会新建连接：没有连接池，可能导致过多 TCP 连接，影响性能。缺乏健康检查，如果目标服务不可用，客户端不会自动重试。  服务注册与发现的基本概念服务注册">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hanchi3.github.io/img/head.png">
+<meta property="article:published_time" content="2025-04-02T09:40:28.000Z">
+<meta property="article:modified_time" content="2025-04-02T10:10:59.731Z">
+<meta property="article:author" content="Han Chi">
+<meta property="article:tag" content="Tech, Gopher, Research">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hanchi3.github.io/img/head.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "etcd服务发现",
+  "url": "http://hanchi3.github.io/2025/04/02/etcd%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0/",
+  "image": "http://hanchi3.github.io/img/head.png",
+  "datePublished": "2025-04-02T09:40:28.000Z",
+  "dateModified": "2025-04-02T10:10:59.731Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Han Chi",
+      "url": "https://github.com/hanchi3"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://hanchi3.github.io/2025/04/02/etcd%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":900,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'etcd服务发现',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/beijing.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">HanChi's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">etcd服务发现</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">etcd服务发现</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-04-02T09:40:28.000Z" title="Created 2025-04-02 17:40:28">2025-04-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-04-02T10:10:59.731Z" title="Updated 2025-04-02 18:10:59">2025-04-02</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word Count:</span><span class="word-count">1.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading Time:</span><span>3mins</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="传统硬编码方式"><a href="#传统硬编码方式" class="headerlink" title="传统硬编码方式"></a>传统硬编码方式</h2><p>手动指定 host:port 进行 grpc.Dial() 连接。<br>缺点</p>
+<ul>
+<li><strong>强依赖固定地址端口，缺乏灵活性。<strong>如果服务动态扩展（比如</strong>负载均衡下多实例运行</strong>），无法自动发现新实例。</li>
+<li>**连接管理问题。**代码里每次 grpc.Dial() 都会新建连接：没有连接池，可能导致过多 TCP 连接，影响性能。缺乏健康检查，如果目标服务不可用，客户端不会自动重试。</li>
+</ul>
+<h2 id="服务注册与发现的基本概念"><a href="#服务注册与发现的基本概念" class="headerlink" title="服务注册与发现的基本概念"></a>服务注册与发现的基本概念</h2><p>服务注册与发现是微服务架构中的核心机制，用于解决服务之间动态定位的问题。传统的硬编码方式（如 localhost:8081）在分布式系统中不灵活，而 etcd 提供了一个集中式的、动态的解决方案。</p>
+<ul>
+<li><strong>服务注册</strong>: 服务启动时，将自己的地址（如 IP:Port）注册到一个中心化的存储（如 etcd），通常以键值对的形式存储。</li>
+<li><strong>服务发现</strong>: 客户端通过查询这个存储，获取目标服务的地址，然后与之建立连接。</li>
+<li><strong>动态性</strong>: 服务端地址可以随时变化（例如服务重启、扩容、故障转移），客户端需要实时感知这些变化。</li>
+</ul>
+<h2 id="etcd-的核心原理"><a href="#etcd-的核心原理" class="headerlink" title="etcd 的核心原理"></a>etcd 的核心原理</h2><p>etcd 是一个<strong>分布式键值存储系统</strong>，具有以下特性，非常适合服务注册与发现：</p>
+<ul>
+<li><strong>键值存储</strong>: 数据以键值对形式存储，例如 <code>/services/user</code> -&gt; <code>localhost:8081</code>。</li>
+<li><strong>一致性</strong>: 使用 Raft 算法保证分布式节点间数据一致。</li>
+<li><strong>Watch 机制</strong>: 客户端可以监听某个键的变化，实时获取更新。</li>
+<li><strong>租约（Lease）</strong>: 支持为键绑定租约，超时未续约则自动删除，用于检测服务是否存活。</li>
+</ul>
+<h2 id="服务注册与发现的实现过程"><a href="#服务注册与发现的实现过程" class="headerlink" title="服务注册与发现的实现过程"></a>服务注册与发现的实现过程</h2><p>以下是基于 etcd 的服务注册与发现的完整过程：</p>
+<h3 id="服务注册（服务端）"><a href="#服务注册（服务端）" class="headerlink" title="服务注册（服务端）"></a>服务注册（服务端）</h3><ul>
+<li><p><strong>服务启动</strong>:<br>服务（例如你的用户服务）启动时，确定自己的监听地址（如 <code>localhost:8081</code>）。</p>
+</li>
+<li><p><strong>连接 etcd</strong>:<br>使用 etcd 客户端库（如 <code>go.etcd.io/etcd/client/v3</code>）连接到 etcd 集群。</p>
+</li>
+<li><p><strong>注册地址</strong>:<br>将服务地址写入 etcd，例如键 <code>/services/user</code> 的值为 <code>localhost:8081</code>。<br>通常会为这个键绑定一个租约（Lease），比如 10 秒超时。</p>
+</li>
+<li><p><strong>心跳续约</strong>:<br>服务定期（例如每 5 秒）向 etcd 发送心跳，续约租约。<br>如果服务宕机，心跳停止，租约到期后 etcd 自动删除该键，表明服务不可用。</p>
+</li>
+</ul>
+<h3 id="服务发现（客户端）"><a href="#服务发现（客户端）" class="headerlink" title="服务发现（客户端）"></a>服务发现（客户端）</h3><ul>
+<li><p><strong>连接 etcd</strong>:<br>客户端初始化时，连接到 etcd 集群。</p>
+</li>
+<li><p><strong>查询服务地址</strong>:<br>查询某个键（如 <code>/services/user</code>），获取当前可用的服务地址列表。<br>例如，返回 <code>localhost:8081</code>。</p>
+</li>
+<li><p><strong>建立连接</strong>:<br>使用查询到的地址与服务建立连接（例如 gRPC 的 Dial）。</p>
+</li>
+<li><p><strong>监听变化</strong>:<br>使用 etcd 的 Watch 机制，监听 <code>/services/user</code> 的变化。<br>如果服务地址更新（新增、删除），客户端实时感知并调整连接。</p>
+</li>
+</ul>
+<h3 id="动态更新"><a href="#动态更新" class="headerlink" title="动态更新"></a>动态更新</h3><ul>
+<li><p><strong>服务扩容</strong>: 新实例启动并注册（如 <code>/services/user</code> -&gt; <code>[localhost:8081, localhost:8082]</code>）。</p>
+</li>
+<li><p><strong>服务故障</strong>: 某实例宕机，租约到期，etcd 删除其地址，客户端感知后停止使用。</p>
+</li>
+<li><p><strong>客户端反应</strong>: 客户端根据最新的地址列表更新连接，可能涉及负载均衡。</p>
+</li>
+</ul>
+<h2 id="在-gRPC-中的实现原理"><a href="#在-gRPC-中的实现原理" class="headerlink" title="在 gRPC 中的实现原理"></a>在 gRPC 中的实现原理</h2><p>gRPC 提供了一个 <code>resolver</code> 接口，用于实现自定义的服务发现逻辑。结合 etcd，过程如下：</p>
+<h3 id="gRPC-Resolver"><a href="#gRPC-Resolver" class="headerlink" title="gRPC Resolver"></a>gRPC Resolver</h3><ul>
+<li><p>Resolver 的作用: 将服务名称（例如 <code>etcd:///services/user</code>）解析为具体的地址（如 <code>localhost:8081</code>），并动态更新。</p>
+</li>
+<li><p>自定义 Resolver:<br>实现 <code>resolver.Builder</code> 接口，定义如何从 etcd 获取地址。<br>实现 <code>resolver.Resolver</code> 接口，处理地址解析和更新。</p>
+</li>
+</ul>
+<h3 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h3><ul>
+<li><p><strong>客户端初始化</strong>:<br>注册一个 etcd resolver，告诉 gRPC 使用 etcd 解析服务地址。<br>调用 <code>grpc.Dial(&quot;etcd:///services/user&quot;, ...)</code>。</p>
+</li>
+<li><p><strong>Resolver 查询</strong>:<br>Resolver 从 etcd 获取 <code>/services/user</code> 的值（例如 <code>localhost:8081</code>）。<br>将地址传递给 gRPC 的连接管理器（<code>ClientConn</code>）。</p>
+</li>
+<li><p><strong>动态监听</strong>:<br>Resolver 使用 etcd 的 Watch 监听键变化。<br>地址更新时，通知 gRPC 更新连接目标。</p>
+</li>
+<li><p><strong>负载均衡</strong>:<br>如果返回多个地址，gRPC 可通过内置负载均衡策略（如 <code>round_robin</code>）分发请求。</p>
+</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/hanchi3">Han Chi</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://hanchi3.github.io/2025/04/02/etcd%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0/">http://hanchi3.github.io/2025/04/02/etcd服务发现/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/head.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2025/03/22/gRPC/" title="gRPC、微服务"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">gRPC、微服务</div></div><div class="info-2"><div class="info-item-1">RPC（Remote Procedure...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Han Chi</div><div class="author-info-description">Backend Software Engineer 
+
+
+
+
+
+ XDU->BUPT</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hanchi3"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/hanchi3" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Thank you for visiting my blog! Enjoy your stay! 🍻</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%A0%E7%BB%9F%E7%A1%AC%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F"><span class="toc-number">1.</span> <span class="toc-text">传统硬编码方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C%E4%B8%8E%E5%8F%91%E7%8E%B0%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">2.</span> <span class="toc-text">服务注册与发现的基本概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#etcd-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">etcd 的核心原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C%E4%B8%8E%E5%8F%91%E7%8E%B0%E7%9A%84%E5%AE%9E%E7%8E%B0%E8%BF%87%E7%A8%8B"><span class="toc-number">4.</span> <span class="toc-text">服务注册与发现的实现过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C%EF%BC%88%E6%9C%8D%E5%8A%A1%E7%AB%AF%EF%BC%89"><span class="toc-number">4.1.</span> <span class="toc-text">服务注册（服务端）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%EF%BC%88%E5%AE%A2%E6%88%B7%E7%AB%AF%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">服务发现（客户端）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E6%9B%B4%E6%96%B0"><span class="toc-number">4.3.</span> <span class="toc-text">动态更新</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8-gRPC-%E4%B8%AD%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-number">5.</span> <span class="toc-text">在 gRPC 中的实现原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#gRPC-Resolver"><span class="toc-number">5.1.</span> <span class="toc-text">gRPC Resolver</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">5.2.</span> <span class="toc-text">工作流程</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/04/02/etcd%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0/" title="etcd服务发现">etcd服务发现</a><time datetime="2025-04-02T09:40:28.000Z" title="Created 2025-04-02 17:40:28">2025-04-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/22/gRPC/" title="gRPC、微服务">gRPC、微服务</a><time datetime="2025-03-22T05:03:40.000Z" title="Created 2025-03-22 13:03:40">2025-03-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/18/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/" title="动态规划">动态规划</a><time datetime="2025-03-18T05:19:04.000Z" title="Created 2025-03-18 13:19:04">2025-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/13/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" title="📖 操作系统">📖 操作系统</a><time datetime="2025-03-13T07:34:59.000Z" title="Created 2025-03-13 15:34:59">2025-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/13/mysql/" title="📖 mysql-索引、事务、锁">📖 mysql-索引、事务、锁</a><time datetime="2025-03-13T06:57:05.000Z" title="Created 2025-03-13 14:57:05">2025-03-13</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/beijing.png);"><div id="footer-wrap"><div class="copyright">&copy;2025 By Han Chi</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.3</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
