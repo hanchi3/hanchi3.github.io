@@ -1,0 +1,295 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>数仓项目环境 - 采集 | HanChi's Blog</title><meta name="author" content="Han Chi"><meta name="copyright" content="Han Chi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="环境配置全过程虚拟机配置1. 模版机搭建 Vmware15.5 CentOS-7-x86_64-DVD-1804 虚拟机名称：Hadoop100（对应视频教程） 内存：4GB（如果内存&gt;16BG，建议多给） 网络类型：使用网络地址转换（NAT） 磁盘大小：50G，将虚拟磁盘存储为多个文件 Linux安装基本环境：CHOME 远程终端工具推荐：MobaXterm 2. 3个虚拟机搭建 克隆虚拟">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数仓项目环境 - 采集">
+<meta property="og:url" content="http://hanchi3.github.io/2025/05/12/%E6%95%B0%E4%BB%93%E9%A1%B9%E7%9B%AE/index.html">
+<meta property="og:site_name" content="HanChi&#39;s Blog">
+<meta property="og:description" content="环境配置全过程虚拟机配置1. 模版机搭建 Vmware15.5 CentOS-7-x86_64-DVD-1804 虚拟机名称：Hadoop100（对应视频教程） 内存：4GB（如果内存&gt;16BG，建议多给） 网络类型：使用网络地址转换（NAT） 磁盘大小：50G，将虚拟磁盘存储为多个文件 Linux安装基本环境：CHOME 远程终端工具推荐：MobaXterm 2. 3个虚拟机搭建 克隆虚拟">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://hanchi3.github.io/img/head.png">
+<meta property="article:published_time" content="2025-05-12T13:15:57.000Z">
+<meta property="article:modified_time" content="2025-05-15T07:37:19.523Z">
+<meta property="article:author" content="Han Chi">
+<meta property="article:tag" content="Tech, Gopher, Research">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://hanchi3.github.io/img/head.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "数仓项目环境 - 采集",
+  "url": "http://hanchi3.github.io/2025/05/12/%E6%95%B0%E4%BB%93%E9%A1%B9%E7%9B%AE/",
+  "image": "http://hanchi3.github.io/img/head.png",
+  "datePublished": "2025-05-12T13:15:57.000Z",
+  "dateModified": "2025-05-15T07:37:19.523Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Han Chi",
+      "url": "https://github.com/hanchi3"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://hanchi3.github.io/2025/05/12/%E6%95%B0%E4%BB%93%E9%A1%B9%E7%9B%AE/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":900,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '数仓项目环境 - 采集',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">27</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/beijing.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">HanChi's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">数仓项目环境 - 采集</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">数仓项目环境 - 采集</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-05-12T13:15:57.000Z" title="Created 2025-05-12 21:15:57">2025-05-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-05-15T07:37:19.523Z" title="Updated 2025-05-15 15:37:19">2025-05-15</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word Count:</span><span class="word-count">3.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading Time:</span><span>12mins</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="环境配置全过程"><a href="#环境配置全过程" class="headerlink" title="环境配置全过程"></a>环境配置全过程</h2><h3 id="虚拟机配置"><a href="#虚拟机配置" class="headerlink" title="虚拟机配置"></a>虚拟机配置</h3><p><strong>1. 模版机搭建</strong></p>
+<p>Vmware15.5</p>
+<p>CentOS-7-x86_64-DVD-1804</p>
+<p>虚拟机名称：Hadoop100（对应视频教程）</p>
+<p>内存：4GB（如果内存&gt;16BG，建议多给）</p>
+<p>网络类型：使用网络地址转换（NAT）</p>
+<p>磁盘大小：50G，将虚拟磁盘存储为多个文件</p>
+<p>Linux安装基本环境：CHOME</p>
+<p>远程终端工具推荐：MobaXterm</p>
+<p><strong>2. 3个虚拟机搭建</strong></p>
+<p>克隆虚拟机hadoop102，hadoop103，hadoop104</p>
+<p>修改克隆机IP</p>
+<p>修改主机名</p>
+<p>添加其他虚拟机IP</p>
+<p>添加集群分发脚本（通用，后面会经常用到） &#x2F;home&#x2F;atguigu&#x2F;bin&#x2F;xsync</p>
+<p>ssh无密码配置</p>
+<p>安装JDK</p>
+<h3 id="软件安装"><a href="#软件安装" class="headerlink" title="软件安装"></a>软件安装</h3><h4 id="集群命令批量执行脚本"><a href="#集群命令批量执行脚本" class="headerlink" title="集群命令批量执行脚本"></a>集群命令批量执行脚本</h4><p>在bin文件夹下创建xcall脚本（通用，后面会经常用到） &#x2F;home&#x2F;atguigu&#x2F;bin&#x2F;xcall</p>
+<h4 id="Hadoop安装"><a href="#Hadoop安装" class="headerlink" title="Hadoop安装"></a>Hadoop安装</h4><p><strong>1. 环境准备</strong><br> 将安装包上传到software文件夹中，解压，修改环境变量，分发环境变量。</p>
+<p><strong>2. 配置hadoop文件</strong><br> 进入&#x2F;opt&#x2F;module&#x2F;hadoop&#x2F;etc&#x2F;hadoop&#x2F;文件夹，修改多个xml文件，分发Hadoop（module文件夹），xsync &#x2F;opt&#x2F;module&#x2F;hadoop&#x2F;。</p>
+<p><strong>3. 启动集群</strong><br> 初始化初始化 NameNode（hadoop102）（module&#x2F;hadoop文件夹）；HDFS+yarn启动指令，或使用统一启动命令：sbin&#x2F;start-all.sh。</p>
+<p><strong>4. 集群管理脚本</strong><br> 创建 hdp.sh 脚本（位于 &#x2F;opt&#x2F;module&#x2F;hadoop&#x2F;bin&#x2F;），支持启动&#x2F;停止集群。</p>
+<h4 id="Zookeeper安装"><a href="#Zookeeper安装" class="headerlink" title="Zookeeper安装"></a>Zookeeper安装</h4><p><strong>1. 环境准备</strong><br> 将安装包上传到software文件夹中，解压，创建数据目录：在 &#x2F;opt&#x2F;module&#x2F;zookeeper&#x2F; 下创建 zkData 文件夹。</p>
+<p><strong>2. 配置 ZooKeeper</strong><br> 设置节点标识：在 zkData 下创建 myid 文件，内容为节点唯一标识。<br> 配置 zoo.cfg：进入 &#x2F;opt&#x2F;module&#x2F;zookeeper&#x2F;conf&#x2F;，复制 zoo_sample.cfg 为 zoo.cfg，里面设置了数据目录、客户端端口、集群节点、其他参数。</p>
+<p><strong>3. 分发与配置调整</strong><br> 分发 ZooKeeper 目录到所有节点（hadoop102、hadoop103、hadoop104）：xsync zookeeper&#x2F;。<br> 在 hadoop103 和 hadoop104 上修改 myid 文件，分别设置为 3 和 4。</p>
+<p><strong>4. 启动集群</strong><br> 在每个节点上执行启动命令：bin&#x2F;zkServer.sh start</p>
+<p><strong>5. 集群管理脚本</strong><br> 在bin文件夹中创建zk.sh 脚本，支持启动&#x2F;停止集群。</p>
+<h4 id="Kafka安装"><a href="#Kafka安装" class="headerlink" title="Kafka安装"></a>Kafka安装</h4><p><strong>1. 环境准备</strong><br> 将安装包上传到software文件夹中，解压。</p>
+<p><strong>2. 配置 Kafka</strong><br> 修改配置文件（kafka&#x2F;config文件夹），编辑server.properties文件。</p>
+<p><strong>3. 分发与配置调整</strong><br> 分发安装包并修改hadoop103、hadoop104的broker.id及advertised.listeners。配置环境变量，分发变量，刷新变量（三台虚拟机）。</p>
+<p><strong>4. 启动集群</strong><br> Kafka启动命令 bin&#x2F;kafka-server-start.sh -daemon config&#x2F;server.properties</p>
+<p><strong>5. 集群管理脚本</strong><br> 在bin文件夹中创建kf.sh，支持启动&#x2F;停止集群。</p>
+<h4 id="Flume安装"><a href="#Flume安装" class="headerlink" title="Flume安装"></a>Flume安装</h4><p><strong>1. 环境准备</strong><br> 将安装包上传到software文件夹中，解压。</p>
+<p><strong>2. 配置 Kafka</strong><br> 修改配置文件（flume&#x2F;conf文件夹），log4j2.xml文件。</p>
+<h4 id="MySql-安装"><a href="#MySql-安装" class="headerlink" title="MySql 安装"></a>MySql 安装</h4><p><strong>1. MySQL单机安装（hadoop102）</strong><br> 在opt&#x2F;software文件夹中创建mysql文件夹，将资料中的mysql文件夹中的所有文件上传到该文件夹，安装MySQL（software文件夹）install_mysql.sh。</p>
+<p><strong>2. 创建数据库和表</strong><br> 利用软件创建一个gmall数据库，编码为utf8mb4，排序规则为utf8mb4_general_ci，运行gmall.sql脚本。</p>
+<h4 id="Maxwell安装"><a href="#Maxwell安装" class="headerlink" title="Maxwell安装"></a>Maxwell安装</h4><p><strong>1. 环境准备</strong><br> 将安装包上传到software文件夹中，解压。</p>
+<p><strong>2. 修改MySQL配置文件</strong><br> 修改MySQL配置文件，sudo vim &#x2F;etc&#x2F;my.cnf，添加下列内容。重启MySQL，命令行进入MySQL，创建maxwell数据库，创建maxwell用户并修改权限，退出mysql。<br> 配置Maxwell文件（opt&#x2F;module&#x2F;maxwell文件夹）</p>
+<p><strong>3. 启动Maxwell</strong><br> Maxwell启动命令 &#x2F;opt&#x2F;module&#x2F;maxwell&#x2F;bin&#x2F;maxwell –config &#x2F;opt&#x2F;module&#x2F;maxwell&#x2F;config.properties –daemon</p>
+<p><strong>4. 管理脚本</strong><br> 在bin文件夹中创建mwx.sh脚本。</p>
+<h4 id="DataX安装"><a href="#DataX安装" class="headerlink" title="DataX安装"></a>DataX安装</h4><p><strong>1. Data单机安装（hadoop102）</strong><br> 将安装包上传到software文件夹中，解压。启动命令 python bin&#x2F;datax.py 作业路径。</p>
+<p><strong>2. Datax配置文件生成器</strong><br> com.atguigu.datax.beans.Column类  com.atguigu.datax.beans.Table类 com.atguigu.datax.configuration.Configuration类 com.atguigu.datax.helper.DataxJsonHelper类 ​​​​​​​​​​​​​​com.atguigu.datax.helper.MysqlHelper类</p>
+<h2 id="采集与数仓的区别"><a href="#采集与数仓的区别" class="headerlink" title="采集与数仓的区别"></a>采集与数仓的区别</h2><h3 id="完整项目数据流转过程"><a href="#完整项目数据流转过程" class="headerlink" title="完整项目数据流转过程"></a>完整项目数据流转过程</h3><ol>
+<li><p>用户行为产生数据<br>数据的起点是用户的操作，用户通过前端应用（比如 App、网页等）与系统进行交互，触发各种操作，比如点击、下单、支付等行为，这些操作会通过业务系统产生数据。</p>
+</li>
+<li><p>业务系统接收请求，生成数据，进入存储层<br>用户请求经过业务服务器处理后，会生成两类数据：<br>一类是核心的<strong>业务数据</strong>，比如用户下单、支付等结构化数据，这些会被存入 mysql业务关系型数据库。是企业正常运转的核心数据，反映了企业的实际业务操作。<br>另一类是用户的<strong>行为数据</strong>（如点击日志、浏览记录），通常通过日志文件或埋点方式进行采集，以日志形式写入日志文件中。可用于行为分析、兴趣建模、个性化推荐等场景。</p>
+</li>
+<li><p>数据采集<br>从mysql、log文件里同步取出，存入HDFS集群，作为<strong>数据仓库的数据源</strong>。</p>
+</li>
+<li><p>进入数据仓库，进行统计分析<br>所有原始数据会通过采集、清洗、加工等步骤统一进入数据仓库（DWD&#x2F;DWS层），用于统一建模、分析、查询。</p>
+</li>
+<li><p>数据输出到可视化平台<br>最终，数据会通过可视化平台（如 BI 系统、DataV、大屏展示等）呈现给业务人员或管理层，用于支持运营分析与决策。</p>
+</li>
+</ol>
+<h3 id="数据仓库的核心目标：统计分析"><a href="#数据仓库的核心目标：统计分析" class="headerlink" title="数据仓库的核心目标：统计分析"></a>数据仓库的核心目标：统计分析</h3><p><strong>数据仓库的核心功能不是“存储数据”，而是“统计分析”。存储只是手段，统计分析才是目的。</strong></p>
+<p>可用于统计分析的技术框架包括：</p>
+<ul>
+<li>MapReduce（MR）——早期技术</li>
+<li>Spark</li>
+<li>Flink（未来会学）<br>在实际项目中，优先考虑 Spark，但直接用 RDD 编写复杂、开发成本高。使用 SQL 替代手写 RDD 提高开发效率。学习门槛更低，开发速度更快。</li>
+</ul>
+<p>SQL 在 Spark 中的两条技术路线：</p>
+<ul>
+<li>Spark on Hive：Spark 来解析 SQL</li>
+<li>Hive on Spark：Hive 来解析 SQL<br>区别在于 “谁来解析 SQL”<br>实际开发中通常两个都用，但 Hive on Spark 更常见，特别在 Hadoop 环境下。</li>
+</ul>
+<p><strong>统计分析的基本步骤</strong>：<br>无论使用什么技术框架（Spark、Hive、MR），统计分析必须遵循以下基本步骤：</p>
+<ol>
+<li>数据源对接<br> 明确数据来源（内存、磁盘、数据库、HDFS等）</li>
+<li>数据加工（预处理）<br> 包括格式转换、过滤、去重、脱敏等，本质是为了让数据满足后续计算需求</li>
+<li>统计<br> 执行聚合类操作，如求和、计数、最大&#x2F;最小值等</li>
+<li>分析<br> 在统计结果的基础上进行进一步筛选、排序、选取关键部分（如Top-N分析），为展示（如图表）提供支撑。</li>
+<li>结果输出<br> 可选：保存到数据库、文件，或在控制台输出</li>
+</ol>
+<h3 id="数据源"><a href="#数据源" class="headerlink" title="数据源"></a>数据源</h3><p><strong>为什么不直接用业务数据库作为数据仓库的数据源？</strong></p>
+<ol>
+<li>存储结构不匹配<br> 业务数据库（如 MySQL）：行式存储（Row-oriented）<br> 数据仓库：列式存储（Column-oriented）<br> 行列存储的结构不同，导致直接读取效率低、无法高效支持统计分析。</li>
+<li>业务数据库中存储的不是海量数据，数据量不够，业务数据库只保留有限时间（如2年）的数据，无法满足数据仓库“分析10年数据”的需求。</li>
+<li>数据仓库的大量查询操作会影响业务数据库的性能，进而影响业务系统正常运行。业务数据库不是为了数据仓库服务的，是为用户业务服务的；</li>
+</ol>
+<p><strong>正确做法：为数据仓库设计独立的数据源</strong></p>
+<h3 id="数据采集和数据仓库解耦"><a href="#数据采集和数据仓库解耦" class="headerlink" title="数据采集和数据仓库解耦"></a>数据采集和数据仓库解耦</h3><p><strong>采集的本质：</strong><br><strong>原始数据</strong>来自不同的数据源（如业务数据库），我们需要将这些数据定期同步过来。这一过程被称为<strong>数据采集</strong>。数据采集不是一次性的，而是周期性同步，目前通常以“天”为单位进行同步（未来可支持小时级或实时同步）。<strong>采集的本质是将源系统的原始数据同步到数据仓库的“源表”中。</strong></p>
+<p><strong>数据采集的耦合问题：</strong><br>采集过程中存在一个关键问题：采集系统必须知道目标数据库中的表结构，否则无法将数据正确写入。这导致了采集系统与数据仓库之间出现了耦合性，表现为：</p>
+<ul>
+<li>采集系统必须依赖数据仓库中定义好的表结构；</li>
+<li>数据仓库的变更可能会影响采集项目的实现。<br>但我们在架构设计中提倡：采集系统与数据仓库应能独立开发、部署，这就需要解耦设计。</li>
+</ul>
+<p><strong>解耦方案 —— 引入中间层：</strong><br>采集系统只需要将数据写入中间层，无需关心最终表结构；数据仓库系统从中间层读取数据，进行清洗、转换并加载到最终表中。解耦设计使得两个系统可以独立开发、灵活迭代，提升整体系统的可维护性与扩展性。<br>具体表现为：</p>
+<ol>
+<li>数据采集：业务mysql数据通过 DataX、Maxwell 同步，业务file数据通过 Flume 同步，存入HDFS。</li>
+<li>数据仓库：从HDFS里取数据源。（hdfs解耦合）</li>
+<li>数据可视化：数据分析结果，又存入mysql，web从mysql里取数据。（mysql解耦合）</li>
+</ol>
+<h2 id="采集平台（可以满足离线数仓需求、实时数仓需求）"><a href="#采集平台（可以满足离线数仓需求、实时数仓需求）" class="headerlink" title="采集平台（可以满足离线数仓需求、实时数仓需求）"></a>采集平台（可以满足离线数仓需求、实时数仓需求）</h2><h3 id="数据采集与数据流转架构"><a href="#数据采集与数据流转架构" class="headerlink" title="数据采集与数据流转架构"></a>数据采集与数据流转架构</h3><p>数据采集与流转体系<strong>需同时考虑离线和实时处理两种场景</strong>。</p>
+<ol>
+<li><p>首先，从<strong>数据产生</strong>环节讲起，强调业务交互和用户行为产生原始数据，这些数据由业务服务器收集，并存储到业务数据库中。这里会涉及后端分布式负载均衡器的使用，SpringClould、go-Zero这类分布式业务框架，确保高可用性和扩展性。</p>
+</li>
+<li><p>接着，<strong>数据采集和同步</strong>环节，采用专门的服务将本地文件&#x2F;业务数据库上传至分布式文件系统（如 HDFS），以实现解耦和统一管理。<strong>日志文件</strong>使用“Flume”作为文件上传工具，它在设计初期就是为了解决从本地向 HDFS 传输数据的问题，因此具备高度专业性。</p>
+</li>
+<li><p>引入了Kafka，指出 Kafka 的加入并非仅仅为了解决“削峰”问题（即缓冲高并发数据流），核心价值在于<strong>解耦上下游、支持可控消费、以及偏移量机制</strong>。Kafka支持从任意偏移位置消费数据，这使得生产与消费可以解耦，便于做容错和负载控制。因此，Kafka 是实时链路中数据传输的重要中间件。</p>
+</li>
+<li><p>此外还提到，从数据存储解耦层（如 HDFS）开始，数据被同步到数据仓库中（使用 Hive），再通过 HiveSQL 实现统计分析，构建离线分析模型。而为了实现数据的可视化展示，需将部分处理后的数据同步回 MySQL，便于可视化平台（如 BI 工具）接入查询与展示。</p>
+</li>
+</ol>
+<h3 id="数据采集系统流程图"><a href="#数据采集系统流程图" class="headerlink" title="数据采集系统流程图"></a>数据采集系统流程图</h3><p><strong>数据采集项目</strong>：</p>
+<ul>
+<li>logFile通过<strong>Flume工具</strong>，先进入Kafka（自带offset可以均衡的取数据 平衡速率 主要为了实时数仓），再通过<strong>Flume工具</strong>，进入Hadoop集群。<strong>File &#x3D;&gt; <code>Flume</code> &#x3D;&gt; Kafka &#x3D;&gt; <code>Flume</code> &#x3D;&gt; HDFS</strong></li>
+<li>Mysql业务数据通过增量同步<strong>Maxwell工具</strong>，进入Kafka，再通过<strong>Flume工具</strong>，进入Hadoop集群。每日全量<strong>DataX工具</strong>，进入Hadoop集群。<strong>增量同步 mysql &#x3D;&gt; <code>Maxwell</code> &#x3D;&gt; Kafka &#x3D;&gt; <code>Flume</code> &#x3D;&gt;HDFS，全量同步 mysql &#x3D;&gt; <code>DataX</code> &#x3D;&gt; HDFS。</strong></li>
+</ul>
+<p>补充：</p>
+<ul>
+<li>采集不仅给离线数仓用，还要给实时数仓用，flink直接对接Kafka就行了。</li>
+<li>全量数据同步：表的全部数据。 增量数据同步：表的新增及变化的数据。 与统计需求挂钩。全量数据同步（DataX）不用于实时数据分析。增量数据同步（Maxwell）用于实时数据分析，也用于离线数据分析。</li>
+</ul>
+<p><strong>日志数据采集过程</strong>：</p>
+<ol>
+<li>jar包生成模拟日志数据app.log，</li>
+<li>flume路径下创建job的conf配置文件 file_to_kafka.conf，配置source和channel(用不到sink)，通过启动命令自动启动flume采集。<code>推入Kafka topic_log。</code></li>
+<li>再通过Flume将Kafka的数据同步到HDFS，（其实由于有Kafka，写入hdfs其实是实时的，但实际上离线数仓的取用是每日离线的）。（由于离线数仓采用Hive的分区表按天统计，为了方便所以HDFS目标路径要包含一层日期，Flume工具配置选择KafkaSource、FileChannel、HDFSSink），（KafkaSource订阅Kafka中的topic，增加拦截器：判断json格式数据是否有效，为Event修改header中的时间戳 解决零点漂移问题）（拦截器的jar包放到&#x2F;flume&#x2F;lib下）。</li>
+</ol>
+<p><strong>业务数据采集过程</strong>：</p>
+<ol>
+<li>mysql的<strong>增量数据</strong>通过Maxwell工具（监控mysql的binlog变化的实时流式工具），以json文件格式，<code>推入Kafka topic_db。</code>（采用每日增量同步的表，通常需要首次同步时全量一下，通过Maxwell的bootstrap工具（select *）来进行历史数据的首日全量同步）。Flume工具从Kafka里取数据，存入hdfs里&#x2F;gmall&#x2F;db&#x2F;表名_inc&#x2F;2022-06-06，（选择KafkaSource、FileChannel、HDFSSink），（也需要一个拦截器，从Event中找表名和日期）。</li>
+<li>mysql的<strong>全量数据</strong>通过DataX工具（基于Select查询的离线、批量同步工具）同步。<code>不进入Kafka</code>。（为了方便所以HDFS目标路径要包含一层日期，故hdfswriter的path参数值应该是动态的）。通过DataX工具，配置mysqlreader、hdfswriter插件的配置json文件，存入hdfs里&#x2F;gmall&#x2F;db&#x2F;表名_full&#x2F;2022-06-06。</li>
+</ol>
+<h3 id="全量同步与增量同步（仅业务mysql数据）"><a href="#全量同步与增量同步（仅业务mysql数据）" class="headerlink" title="全量同步与增量同步（仅业务mysql数据）"></a>全量同步与增量同步（仅业务mysql数据）</h3><p><strong>业务数据是状态，日志数据是事件；状态需要一致性同步，事件只需记录发生。</strong></p>
+<p>全量同步是指将某张表中的所有数据整体拷贝到目标系统中，适用于对整张表进行统计分析的场景，例如统计网站累计注册用户总数时，只需要一张完整的用户表即可进行简单高效的查询。而增量同步则是指只同步新增或发生变化的数据，适用于对数据变动有明确时间窗口要求的统计需求，例如统计最近一周新增注册用户数。如果仍使用全量同步，需要从庞大的数据集中筛选特定时间段的记录，不仅效率低下，还可能造成系统性能瓶颈。相反，如果使用增量同步，仅记录新增和变化的数据，则可以直接针对小数据集进行分析，效率更高，统计更灵活。<br><strong>数据采集的方式必须服务于数据仓库建设和后续的统计分析目标，技术选型应以最终分析效果与效率为导向。</strong></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/hanchi3">Han Chi</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://hanchi3.github.io/2025/05/12/%E6%95%B0%E4%BB%93%E9%A1%B9%E7%9B%AE/">http://hanchi3.github.io/2025/05/12/数仓项目/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/head.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2025/04/30/hive2/" title="hive2 - 性能调优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">hive2 - 性能调优</div></div><div class="info-2"><div class="info-item-1">优化从存储角度优化：分区分桶、文件格式和压缩 分区表什么是分区表？ Partition分区表是hive的一种优化手段表。分区是指根据分区列（例如“日期day”）的值将表划分为不同分区。这样可以更快地对指定分区数据进行查询。 分区在存储层面上的表现是:table表目录下以子文件夹形式存在。一个文件夹表示一个分区。子文件夹命名标准：分区列=分区值。 Hive还支持分区下继续创建分区，就是所谓的多重分区。Hive支持多个分区字段：PARTITIONED BY (partition1 data_type, partition2...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Han Chi</div><div class="author-info-description">Backend Software Engineer 
+
+
+
+
+
+ XDU->BUPT</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">27</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/hanchi3"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/hanchi3" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Thank you for visiting my blog! Enjoy your stay! 🍻</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E5%85%A8%E8%BF%87%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text">环境配置全过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%85%8D%E7%BD%AE"><span class="toc-number">1.1.</span> <span class="toc-text">虚拟机配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%AF%E4%BB%B6%E5%AE%89%E8%A3%85"><span class="toc-number">1.2.</span> <span class="toc-text">软件安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E5%91%BD%E4%BB%A4%E6%89%B9%E9%87%8F%E6%89%A7%E8%A1%8C%E8%84%9A%E6%9C%AC"><span class="toc-number">1.2.1.</span> <span class="toc-text">集群命令批量执行脚本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Hadoop%E5%AE%89%E8%A3%85"><span class="toc-number">1.2.2.</span> <span class="toc-text">Hadoop安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Zookeeper%E5%AE%89%E8%A3%85"><span class="toc-number">1.2.3.</span> <span class="toc-text">Zookeeper安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Kafka%E5%AE%89%E8%A3%85"><span class="toc-number">1.2.4.</span> <span class="toc-text">Kafka安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Flume%E5%AE%89%E8%A3%85"><span class="toc-number">1.2.5.</span> <span class="toc-text">Flume安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#MySql-%E5%AE%89%E8%A3%85"><span class="toc-number">1.2.6.</span> <span class="toc-text">MySql 安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Maxwell%E5%AE%89%E8%A3%85"><span class="toc-number">1.2.7.</span> <span class="toc-text">Maxwell安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DataX%E5%AE%89%E8%A3%85"><span class="toc-number">1.2.8.</span> <span class="toc-text">DataX安装</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%87%E9%9B%86%E4%B8%8E%E6%95%B0%E4%BB%93%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">2.</span> <span class="toc-text">采集与数仓的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E9%A1%B9%E7%9B%AE%E6%95%B0%E6%8D%AE%E6%B5%81%E8%BD%AC%E8%BF%87%E7%A8%8B"><span class="toc-number">2.1.</span> <span class="toc-text">完整项目数据流转过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E7%9A%84%E6%A0%B8%E5%BF%83%E7%9B%AE%E6%A0%87%EF%BC%9A%E7%BB%9F%E8%AE%A1%E5%88%86%E6%9E%90"><span class="toc-number">2.2.</span> <span class="toc-text">数据仓库的核心目标：统计分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%BA%90"><span class="toc-number">2.3.</span> <span class="toc-text">数据源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E5%92%8C%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E8%A7%A3%E8%80%A6"><span class="toc-number">2.4.</span> <span class="toc-text">数据采集和数据仓库解耦</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%87%E9%9B%86%E5%B9%B3%E5%8F%B0%EF%BC%88%E5%8F%AF%E4%BB%A5%E6%BB%A1%E8%B6%B3%E7%A6%BB%E7%BA%BF%E6%95%B0%E4%BB%93%E9%9C%80%E6%B1%82%E3%80%81%E5%AE%9E%E6%97%B6%E6%95%B0%E4%BB%93%E9%9C%80%E6%B1%82%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">采集平台（可以满足离线数仓需求、实时数仓需求）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E4%B8%8E%E6%95%B0%E6%8D%AE%E6%B5%81%E8%BD%AC%E6%9E%B6%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">数据采集与数据流转架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E7%B3%BB%E7%BB%9F%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="toc-number">3.2.</span> <span class="toc-text">数据采集系统流程图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E9%87%8F%E5%90%8C%E6%AD%A5%E4%B8%8E%E5%A2%9E%E9%87%8F%E5%90%8C%E6%AD%A5%EF%BC%88%E4%BB%85%E4%B8%9A%E5%8A%A1mysql%E6%95%B0%E6%8D%AE%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">全量同步与增量同步（仅业务mysql数据）</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/05/12/%E6%95%B0%E4%BB%93%E9%A1%B9%E7%9B%AE/" title="数仓项目环境 - 采集">数仓项目环境 - 采集</a><time datetime="2025-05-12T13:15:57.000Z" title="Created 2025-05-12 21:15:57">2025-05-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/04/30/hive2/" title="hive2 - 性能调优">hive2 - 性能调优</a><time datetime="2025-04-30T07:58:58.000Z" title="Created 2025-04-30 15:58:58">2025-04-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/04/27/hive/" title="hive part1 - 架构、安装、HQL编写">hive part1 - 架构、安装、HQL编写</a><time datetime="2025-04-27T13:08:37.000Z" title="Created 2025-04-27 21:08:37">2025-04-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/04/26/hadoop/" title="📖 hadoop">📖 hadoop</a><time datetime="2025-04-26T08:53:28.000Z" title="Created 2025-04-26 16:53:28">2025-04-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/04/25/mysql/" title="📖 mysql-索引、事务、锁">📖 mysql-索引、事务、锁</a><time datetime="2025-04-25T08:53:28.000Z" title="Created 2025-04-25 16:53:28">2025-04-25</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/beijing.png);"><div id="footer-wrap"><div class="copyright">&copy;2025 By Han Chi</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.3</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
